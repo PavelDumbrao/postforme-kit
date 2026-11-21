@@ -24,6 +24,7 @@
 | Проверить, что вышло | «Покажи ссылки на опубликованное» |
 | Статистика | «Сколько просмотров у последних роликов?» |
 | Отменить запланированное | «Удали запланированный пост на пятницу» |
+| Нарезать Shorts / Reels из длинного видео | «Нарежь из моего вебинара 5 шортсов и запланируй по одному в день» |
 
 ## Какие соцсети подключаются
 | Соцсеть | Что можно публиковать | Как подключить | Что нужно от вас |
@@ -50,8 +51,10 @@
 ```
 AGENTS.md                          инструкция агенту: установить скилл и вести за ручку
 PROMPT.md                          полный промпт «всё в одном сообщении»
-skills/postforme-publish/SKILL.md  сам скилл: рецепты, правила по соцсетям, ошибки
-scripts/pfm.py                     скрипт: check, accounts, connect, upload, post, wait, status, posts, delete, feed
+skills/postforme-publish/SKILL.md  скилл публикации: рецепты, правила по соцсетям, ошибки
+skills/shorts-from-video/SKILL.md  скилл нарезки Shorts/Reels из длинного видео: выбор моментов, кадр 9:16, проверка
+scripts/pfm.py                     скрипт публикации: check, accounts, connect, upload, post, wait, status, posts, delete, feed
+scripts/shorts.py                  скрипт нарезки: words, sentences, render, plan, sheet (нужен ffmpeg)
 examples/                          готовые подписи и настройки для YouTube, Reels, TikTok, кросспостинга
 guides/registration.md             регистрация, проект, ключ
 guides/mcp.md                      подключение официального MCP к Claude Code, Codex, Cursor, Claude Desktop
