@@ -1,0 +1,10 @@
+.env
+out/
+*.mp4
+*.mov
+*.MOV
+*.jpg
+*.jpeg
+*.png
+__pycache__/
+.DS_Store

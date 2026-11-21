@@ -1,0 +1,16 @@
+{
+  "youtube": {
+    "privacy_status": "public",
+    "made_for_kids": false,
+    "localizations": {},
+    "caption": "Описание для YouTube: 2–3 предложения о пользе ролика.\n\nЧто внутри:\n— пункт 1\n— пункт 2\n\n#нейросети #ИИ #shorts"
+  },
+  "instagram": {
+    "placement": "reels",
+    "caption": "Крючок в первой строке 👇\n\nКоротко о пользе в 2–3 строках.\n\nСохраняй, чтобы не потерять.\n\n#нейросети #ии #reels"
+  },
+  "tiktok": {
+    "is_draft": true,
+    "caption": "Крючок одной строкой #нейросети #ии #fyp"
+  }
+}

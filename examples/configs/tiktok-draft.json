@@ -1,0 +1,10 @@
+{
+  "tiktok": {
+    "is_draft": true,
+    "privacy_status": "public",
+    "allow_comment": true,
+    "allow_duet": true,
+    "allow_stitch": true,
+    "is_ai_generated": false
+  }
+}
