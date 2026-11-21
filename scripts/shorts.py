@@ -275,12 +275,43 @@ def probe_wh(path):
     return int(w), int(h)
 
 
+def audio_offset(video, first_word_s):
+    """Сдвиг между таймингами слов и реальным звуком: ищем конец паузы перед первым словом.
+    Возвращает поправку в секундах (0, если пауза не найдена или сдвиг неправдоподобный)."""
+    w0 = max(0.0, first_word_s - 0.4)
+    p = subprocess.run(["ffmpeg", "-v", "info", "-ss", f"{w0:.3f}", "-t", "1.6", "-i", video, "-vn",
+                        "-af", "silencedetect=noise=-35dB:d=0.1", "-f", "null", "-"], capture_output=True, text=True)
+    ends = [w0 + float(m.group(1)) for m in re.finditer(r"silence_end: ([\d.]+)", p.stderr)]
+    cands = [t for t in ends if -0.25 <= t - first_word_s <= 0.9]
+    if not cands:
+        return 0.0
+    return round(min(cands, key=lambda t: abs(t - first_word_s - 0.3)) - first_word_s, 3)
+
+
+def scene_cut_after(video, s, window=1.0, thr=0.2):
+    """Смена кадра в первые `window` секунд клипа (хвост прошлой сцены и старые субтитры в начале).
+    Возвращает абсолютное время смены или None."""
+    p = subprocess.run(["ffmpeg", "-v", "info", "-ss", f"{max(0, s - 0.05):.3f}", "-t", f"{window:.2f}", "-i", video,
+                        "-vf", f"select='gt(scene,{thr})',showinfo", "-an", "-f", "null", "-"],
+                       capture_output=True, text=True)
+    for line in p.stderr.splitlines():
+        m = re.search(r"pts_time:([\d.]+)", line)
+        if m and "showinfo" in line:
+            t = max(0, s - 0.05) + float(m.group(1))
+            if t > s + 0.04:
+                return t
+    return None
+
+
 def render_one(a):
     need("ffmpeg"); need("ffprobe")
     if not os.path.isfile(a.video):
         die("нет видео " + a.video)
+    off = 0.0
     if a.words:
         s, e, said = snap(load_words(a.words), a.start, a.end)
+        off = audio_offset(a.video, s + 0.12)  # s уже с запасом 0,12 до первого слова
+        s, e = s + off, e + off
     else:
         s, e, said = a.start, a.end, ""
     dur = e - s
@@ -288,7 +319,11 @@ def render_one(a):
         die(f"клип {dur:.1f} с — YouTube Shorts не длиннее 3 минут, Reels лучше до 90 с")
     font = pick_font(a.font)
     src_w, src_h = probe_wh(a.video)
-    print(f"Клип {a.out}: {fmt(s)}–{fmt(e)} ({dur:.1f} с), режим {a.mode}")
+    cut = scene_cut_after(a.video, s)
+    hold = (cut - s) if cut else 0.0
+    print(f"Клип {a.out}: {fmt(s)}–{fmt(e)} ({dur:.1f} с), режим {a.mode}"
+          + (f"; поправка по звуку {off:+.2f} с" if off else "")
+          + (f"; хвост прошлой сцены {hold:.2f} с заменён первым кадром новой" if hold else ""))
     if said:
         print("  Речь: " + (said[:220] + ("…" if len(said) > 220 else "")))
     if a.dry_run:
@@ -297,9 +332,15 @@ def render_one(a):
     with tempfile.TemporaryDirectory() as tmp:
         flt = build_filter(a, font, tmp, src_w, src_h)
         fade_out = max(0.0, dur - 0.25)
-        cmd = ["ffmpeg", "-v", "error", "-y", "-ss", f"{s:.3f}", "-i", a.video, "-t", f"{dur:.3f}",
+        # видео (вход 0) начинается со свежей сцены, звук (вход 1) — с первого слова; разницу держим первым кадром
+        vstart = s + hold
+        flt = flt.replace("[0:v]", "[vin]", 2)
+        pre = f"[0:v]tpad=start_duration={hold:.3f}:start_mode=clone,split=2[vin][vin2];" if hold else "[0:v]split=2[vin][vin2];"
+        flt = pre + flt.replace("[vin]", "[vin2]", 1) if a.mode == "fit" else pre + flt + ";[vin2]nullsink"
+        cmd = ["ffmpeg", "-v", "error", "-y", "-ss", f"{vstart:.3f}", "-i", a.video, "-ss", f"{s:.3f}", "-i", a.video,
+               "-t", f"{dur:.3f}",
                "-filter_complex", flt + f";[v]fade=t=out:st={fade_out:.2f}:d=0.25[vo]",
-               "-map", "[vo]", "-map", "0:a?", "-r", "30",
+               "-map", "[vo]", "-map", "1:a?", "-r", "30",
                "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p",
                "-af", f"loudnorm=I=-14:TP=-1.5:LRA=11,afade=t=out:st={fade_out:.2f}:d=0.25",
                "-c:a", "aac", "-b:a", "160k", "-ar", "48000", "-movflags", "+faststart", a.out]
