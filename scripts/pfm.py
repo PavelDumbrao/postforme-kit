@@ -39,19 +39,26 @@ def log(msg):
     print(msg, flush=True)
 
 
-def load_key():
-    if os.environ.get("POST_FOR_ME_API_KEY"):
-        return os.environ["POST_FOR_ME_API_KEY"].strip()
+def read_env_value(name):
     for p in (".env", os.path.join(ROOT, ".env"), os.path.expanduser("~/.postforme.env")):
         if os.path.exists(p):
             for line in open(p, encoding="utf-8"):
                 line = line.strip()
                 if line.startswith("export "):
                     line = line[7:]
-                if line.startswith("POST_FOR_ME_API_KEY="):
+                if line.startswith(name + "="):
                     v = line.split("=", 1)[1].strip().strip('"').strip("'")
                     if v:
                         return v
+    return None
+
+
+def load_key():
+    if os.environ.get("POST_FOR_ME_API_KEY"):
+        return os.environ["POST_FOR_ME_API_KEY"].strip()
+    v = read_env_value("POST_FOR_ME_API_KEY")
+    if v:
+        return v
     sys.exit("Нет ключа. Создайте файл .env со строкой POST_FOR_ME_API_KEY=pfm_live_... "
              "(ключ: app.postforme.dev → ваш проект → API Keys). Подробно: guides/registration.md")
 
@@ -142,8 +149,24 @@ def cmd_connect(a, key):
     elif a.platform == "instagram":
         # API требует способ входа: instagram (вход в Instagram) или facebook (через страницу Facebook)
         body["platform_data"] = {"instagram": {"connection_type": a.via}}
+    elif a.platform == "linkedin":
+        # для Quickstart-проекта Post for Me велит всегда organization (личный профиль и страницы компании)
+        body["platform_data"] = {"linkedin": {"connection_type": "organization"}}
+    elif a.platform == "bluesky":
+        # Bluesky без OAuth: ник + пароль приложения (Settings → Privacy and security → App passwords)
+        pw = os.environ.get("BLUESKY_APP_PASSWORD") or read_env_value("BLUESKY_APP_PASSWORD")
+        if not a.handle or not pw:
+            sys.exit("Для Bluesky нужны ник и пароль приложения (НЕ обычный пароль):\n"
+                     "  1) Bluesky → Settings → Privacy and security → App passwords → создать;\n"
+                     "  2) добавить в .env строку BLUESKY_APP_PASSWORD=xxxx-xxxx-xxxx-xxxx;\n"
+                     "  3) python3 scripts/pfm.py connect bluesky --handle ваш-ник.bsky.social")
+        body["platform_data"] = {"bluesky": {"handle": a.handle, "app_password": pw}}
     resp = http("POST", "/v1/social-accounts/auth-url", key, body=body)
     url = resp.get("url")
+    if a.platform == "bluesky":
+        log("Запрос на подключение Bluesky отправлен. Проверьте: python3 scripts/pfm.py accounts"
+            + (f"\nЕсли нужен вход в браузере: {url}" if url else ""))
+        return
     if not url:
         sys.exit("API не вернул ссылку: " + json.dumps(clean(resp), ensure_ascii=False)[:500])
     log("Откройте ссылку в браузере, войдите в соцсеть и разрешите доступ:")
@@ -384,6 +407,7 @@ def main():
     s = sub.add_parser("connect"); s.add_argument("platform"); s.add_argument("--external-id")
     s.add_argument("--via", choices=("instagram", "facebook"), default="instagram",
                    help="только для Instagram: вход через Instagram (по умолчанию) или через Facebook")
+    s.add_argument("--handle", help="только для Bluesky: ник, например name.bsky.social")
     s.add_argument("--platform-data", help='JSON, например {"instagram":{"connection_type":"instagram"}}')
     s = sub.add_parser("upload"); s.add_argument("file")
     s = sub.add_parser("post"); s.add_argument("name", help="короткое имя поста латиницей, защита от дублей")

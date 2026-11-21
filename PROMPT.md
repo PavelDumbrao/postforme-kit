@@ -29,7 +29,8 @@
 
 ## Шаг 3. Подключение соцсетей
 1. Для каждой моей соцсети: python3 scripts/pfm.py connect <youtube|instagram|tiktok|tiktok_business|facebook|x|linkedin|threads|pinterest|bluesky>, дай мне ссылку, жди, пока я войду и разрешу доступ.
-2. Перед подключением скажи требования из guides/platforms.md: Instagram — только профессиональный аккаунт (Автор или Бизнес); YouTube — для роликов длиннее 15 минут нужен подтверждённый телефон на канале; TikTok — выбери tiktok или tiktok_business по типу аккаунта.
+2. Перед подключением скажи требования из guides/platforms.md: Instagram — только профессиональный аккаунт (Автор или Бизнес); YouTube — для роликов длиннее 15 минут нужен подтверждённый телефон на канале; TikTok — выбери tiktok или tiktok_business по типу аккаунта; Facebook — только страница (Page), не личный профиль; Bluesky — без ссылки, нужен пароль приложения (BLUESKY_APP_PASSWORD в .env и connect bluesky --handle ник).
+   Если на ссылке ошибка «enable this platform in Project Setup» — попроси меня включить эту соцсеть в настройках проекта на app.postforme.dev.
 3. Проверь python3 scripts/pfm.py accounts — всё должно быть connected. Если что-то не так — объясни причину простыми словами и помоги исправить.
 
 ## Шаг 4. Первая публикация (безопасная проба)

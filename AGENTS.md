@@ -12,6 +12,7 @@
 
 ## Шаг 1. Проверь окружение (сам, без вопросов)
 - `python3 --version` — нужен 3.9+. Нет Python — поставь (macOS `brew install python`, Windows `winget install Python.Python.3.12`, Linux `sudo apt install python3`).
+- На Windows команда может называться `python` или `py` вместо `python3` — используй ту, что работает, во всех командах ниже.
 
 ## Шаг 2. Аккаунт и ключ
 - Спроси, есть ли аккаунт на app.postforme.dev. Нет — проведи по `guides/registration.md`: регистрация, проект типа **Quickstart**, включить нужные соцсети в проекте, тариф, ключ API.
