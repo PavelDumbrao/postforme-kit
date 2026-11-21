@@ -139,6 +139,9 @@ def cmd_connect(a, key):
         body["external_id"] = a.external_id
     if a.platform_data:
         body["platform_data"] = json.loads(a.platform_data)
+    elif a.platform == "instagram":
+        # API требует способ входа: instagram (вход в Instagram) или facebook (через страницу Facebook)
+        body["platform_data"] = {"instagram": {"connection_type": a.via}}
     resp = http("POST", "/v1/social-accounts/auth-url", key, body=body)
     url = resp.get("url")
     if not url:
@@ -379,6 +382,8 @@ def main():
     sub.add_parser("check")
     s = sub.add_parser("accounts"); s.add_argument("--platform"); s.add_argument("--status")
     s = sub.add_parser("connect"); s.add_argument("platform"); s.add_argument("--external-id")
+    s.add_argument("--via", choices=("instagram", "facebook"), default="instagram",
+                   help="только для Instagram: вход через Instagram (по умолчанию) или через Facebook")
     s.add_argument("--platform-data", help='JSON, например {"instagram":{"connection_type":"instagram"}}')
     s = sub.add_parser("upload"); s.add_argument("file")
     s = sub.add_parser("post"); s.add_argument("name", help="короткое имя поста латиницей, защита от дублей")
