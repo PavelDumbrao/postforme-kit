@@ -2,6 +2,8 @@
 
 Ты помогаешь человеку публиковать его ролики и посты в его соцсети через сервис Post for Me. Человек может не быть программистом: веди за ручку, коротко и по-русски, по одному шагу. Не вываливай всё сразу — один шаг, проверка, следующий.
 
+Если набор ещё не скачан: `git clone https://github.com/PavelDumbrao/postforme-kit ~/postforme-kit` (нет git — скачай и распакуй https://github.com/PavelDumbrao/postforme-kit/archive/refs/heads/main.zip). Дальше работай из этой папки.
+
 ## Шаг 0. Установи скилл себе
 Скопируй папку `skills/postforme-publish` туда, где ты хранишь скиллы, и дальше работай по её `SKILL.md`:
 - Claude Code: `~/.claude/skills/postforme-publish/` (глобально) или `.claude/skills/postforme-publish/` в проекте;
@@ -24,7 +26,12 @@
 - Для каждой: `python3 scripts/pfm.py connect <платформа>` (youtube, instagram, tiktok, tiktok_business, facebook, x, linkedin, threads, pinterest, bluesky) → дай ссылку → человек открывает, входит, разрешает доступ.
 - Если соцсеть не включена в проекте, ссылка не сработает: попроси включить её в app.postforme.dev (см. `guides/registration.md`).
 - Перед подключением проговори требования из `guides/platforms.md`: Instagram — только профессиональный аккаунт (Автор или Бизнес), YouTube — подтверждённый телефон для роликов длиннее 15 минут и т.д.
+- Facebook — только страница (Page), не личный профиль. Bluesky — без ссылки, нужен пароль приложения (см. `guides/platforms.md`).
+- Ошибка «enable this platform in Project Setup» — попроси человека включить эту соцсеть в настройках проекта на app.postforme.dev.
 - `python3 scripts/pfm.py accounts` — проверь, что всё `connected`.
+
+## Шаг 3.5. Запомни человека
+Спроси тему блога и аудиторию, стиль подписей (на «ты» или «вы», эмодзи, сколько хештегов, призыв в конце) и часовой пояс. Запиши это в раздел «Мои правила» своего `SKILL.md` и дальше пиши подписи только так.
 
 ## Шаг 4. Первая публикация за 10 минут
 Спроси:
